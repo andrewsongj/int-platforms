@@ -430,11 +430,12 @@ def influx_client(args):
     else:
         host = args.host
         port = 8086
-    user = 'int'
-    password = 'gn4intp4'
+    user = 'example_influx_admin_user'
+    password = 'example_influx_admin_password'
     dbname = args.database
 
     client = InfluxDBClient(host, port, user, password, dbname)
+    logger.info("Before Influx client ping response")
     logger.info("Influx client ping response: %s" % client.ping())
     return client
     
@@ -449,6 +450,7 @@ def start_udp_server(args):
     # Create a datagram socket
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     sock.bind(("0.0.0.0", port))
+    logger.info("Before UDP server up and listening at UDP port: %d ..." % port)
     logger.info("UDP server up and listening at UDP port: %d" % port)
 
     # Listen for incoming datagrams

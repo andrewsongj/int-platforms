@@ -56,6 +56,7 @@ function build-command {
 function run-p4app {
   APP_TO_RUN=/tmp/app.tar.gz
   docker create --privileged --interactive  -i --tty --rm \
+            --network host \
             --name $P4APP_NAME \
             -v $1:$APP_TO_RUN \
             -e DISPLAY=$DISPLAY \
