@@ -72,8 +72,12 @@ def start_int_collector(influxdb):
         ['/usr/bin/socat','TCP-LISTEN:8086,fork','TCP:%s'%influxdb],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
-    
-    collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_influx.py -i 6000 -H 192.168.0.1:8086 -d 1 &> /dev/null'
+    #prometheus_client==0.7.1 is compatible with python3.5 
+    install_cmd = 'pip install prometheus_client==0.7.1'
+    print(install_cmd)
+    os.system(install_cmd)
+    #collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_influx.py -i 6000 -H 192.168.0.1:8086 -d 1 &> /dev/null'
+    collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_prometheus.py -i 6000 -H 192.168.0.1:8086 -d 1 &> /dev/null'
     print(collector_cmd)
     os.system(collector_cmd)
     
