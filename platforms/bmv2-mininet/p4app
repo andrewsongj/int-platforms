@@ -55,24 +55,24 @@ function build-command {
 
 function run-p4app {
   APP_TO_RUN=/tmp/app.tar.gz
-  docker create --privileged --interactive  -i --tty --rm \
+  docker create --privileged --interactive  --network host -i --tty --rm \
             --name $P4APP_NAME \
             -v $1:$APP_TO_RUN \
             -e DISPLAY=$DISPLAY \
             -v $P4APP_LOGDIR:/tmp/p4app_logs \
              $P4APP_CONTAINER_ARGS \
              $P4APP_IMAGE $APP_TO_RUN "${@:2}"
-  # add docker macvlan interfaces to docker container  
+  # add docker macvlan interfaces to docker container
   # allowing for data plane traffic to be send from mininet to external network
   # detects existance of macvlan docker interface named `macvlan_int_0`
   echo "Searching for docker macvlan interface $EXTERNAL_INTERFACE_0"
   if docker network ls -f driver=macvlan | grep -q $EXTERNAL_INTERFACE_0; then
     echo "Adding $EXTERNAL_INTERFACE_0 to docker container $P4APP_NAME"
-    docker network connect $EXTERNAL_INTERFACE_0 $P4APP_NAME 
+    docker network connect $EXTERNAL_INTERFACE_0 $P4APP_NAME
   else
     echo "Interface $EXTERNAL_INTERFACE_0 not found"
   fi
-  docker start --interactive  $P4APP_NAME 
+  docker start --interactive  $P4APP_NAME
 }
 
 function run-command {
