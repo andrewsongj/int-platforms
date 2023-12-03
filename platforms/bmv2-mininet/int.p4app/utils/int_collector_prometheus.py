@@ -20,6 +20,7 @@ logger = logging.getLogger('int_collector')
 
 # Define your metrics, e.g., Gauges for various telemetry data
 hop_latency_gauge = Gauge('hop_latency', 'Latency per hop', ['src_ip', 'dst_ip', 'hop_index'])
+packet_rate_gauge = Gauge('packet_rate', 'packet cnt divided by time')
 # Define more metrics as needed
 
 def parse_params():
@@ -312,9 +313,16 @@ class IntCollector():
         self.last_send = time.time() # last time when reports were send to influx
         
     def add_report(self, report):
+        report_cnt = 0
         for index, hop in enumerate(report.hop_metadata):
             # Update Prometheus metrics
+            report_cnt += 1
             hop_latency_gauge.labels(report.flow_id['srcip'], report.flow_id['dstip'], index).set(hop.hop_latency)
+            logger.info('report_cnt')
+            logger.info(report_cnt)
+        packet_rate_gauge.set(report_cnt / 3 / (time.time() - self.last_send))
+        self.last_send = time.time()
+        
         
         #self.reports.append(report)
         
@@ -487,14 +495,6 @@ def test_hopmetadata():
     meta = HopMetadata(data, ins_map)
     print(meta)
 
-# Create a metric to track time spent and requests made.
-REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
-
-# Decorate function with metric.
-@REQUEST_TIME.time()
-def process_request(t):
-    """A dummy function that takes some time."""
-    time.sleep(t)
 
 if __name__ == "__main__":
     args = parse_params()
@@ -503,9 +503,10 @@ if __name__ == "__main__":
     logger.info("hello world from int_collector_prometheus.py 1")
     start_http_server(8000)
     logger.info("hello world from int_collector_prometheus.py new 2")
-    while True:
-        process_request(1)
-    #start_udp_server(args)
+    #while True:
+    #    pass
+    #    process_request(1)
+    start_udp_server(args)
 
 # SELECT mean("node_delay")  FROM int_telemetry  WHERE ("srcip" =~ /^$srcip$/ AND "dstip" =~ /^$dstip$/ AND  "node_index" =~ /^$hop$/) AND $timeFilter  GROUP BY time($interval) fill(null)
 # SELECT mean("node_delay") FROM "int_udp_policy"."int_telemetry" WHERE ("srcip" = '10.0.1.1' AND "dstip" = '10.0.2.2' AND "hop_number" = '0') AND $timeFilter GROUP BY time($__interval) fill(null)
