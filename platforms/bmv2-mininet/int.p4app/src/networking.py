@@ -72,14 +72,34 @@ def start_int_collector(influxdb):
         ['/usr/bin/socat','TCP-LISTEN:8086,fork','TCP:%s'%influxdb],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
+    install_cmd = 'sudo apt-get install vim -y'
+    print(install_cmd)
+    os.system(install_cmd)
+    install_cmd = 'sudo apt-get install wget'
+    print(install_cmd)
+    os.system(install_cmd)
     #prometheus_client==0.7.1 is compatible with python3.5 
     install_cmd = 'pip install prometheus_client==0.7.1'
     print(install_cmd)
     os.system(install_cmd)
+    # output prometheus port from ns_int to host machine
+    connectivity_cmd = 'sudo iptables -t nat -A PREROUTING -p tcp --dport 8000 -j DNAT --to-destination 192.168.0.2:8000'
+    os.system(connectivity_cmd)
+    connectivity_cmd = 'sudo iptables -t nat -A PREROUTING -p tcp --dport 8000 -j DNAT --to-destination 10.0.0.254:8000'
+    os.system(connectivity_cmd)
+    connectivity_cmd = 'sudo iptables -t nat -A POSTROUTING -j MASQUERADE'
+    os.system(connectivity_cmd)
+    connectivity_cmd = 'sudo sysctl -w net.ipv4.ip_forward=1'
+    os.system(connectivity_cmd)
+    print('Connectivity for prometheus client has been set up')
+
     #collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_influx.py -i 6000 -H 192.168.0.1:8086 -d 1 &> /dev/null'
     collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_prometheus.py -i 6000 -H 192.168.0.1:8086 -d 1 &> /dev/null'
     print(collector_cmd)
     os.system(collector_cmd)
+    #prometheus_cmd = 'python3 /tmp/utils/prometheus_golden_sample.py 1 &> /dev/null'
+    #print(prometheus_cmd)
+    #os.system(prometheus_cmd)
     
     
 def create_internet_connectivity():

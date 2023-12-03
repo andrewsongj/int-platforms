@@ -57,7 +57,7 @@ function run-p4app {
   APP_TO_RUN=/tmp/app.tar.gz
   docker create --privileged --interactive  -i --tty --rm \
             --name $P4APP_NAME \
-            -p 5001:5001 \
+            -p 8000:8000 \
             -v $1:$APP_TO_RUN \
             -e DISPLAY=$DISPLAY \
             -v $P4APP_LOGDIR:/tmp/p4app_logs \

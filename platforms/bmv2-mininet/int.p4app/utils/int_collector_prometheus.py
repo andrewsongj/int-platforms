@@ -7,8 +7,10 @@ import pprint
 import logging
 from copy import copy
 import io
+import random
+import time
 from influxdb import InfluxDBClient
-from prometheus_client import start_http_server, Gauge
+from prometheus_client import start_http_server, Gauge, Summary
 
 
 log_format = "[%(asctime)s] [%(levelname)s] - %(message)s"
@@ -485,15 +487,25 @@ def test_hopmetadata():
     meta = HopMetadata(data, ins_map)
     print(meta)
 
+# Create a metric to track time spent and requests made.
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+
+# Decorate function with metric.
+@REQUEST_TIME.time()
+def process_request(t):
+    """A dummy function that takes some time."""
+    time.sleep(t)
 
 if __name__ == "__main__":
     args = parse_params()
     if args.debug_mode > 0:
         logger.setLevel(logging.DEBUG)
     logger.info("hello world from int_collector_prometheus.py 1")
-    start_http_server(5001, addr='0.0.0.0')
-    logger.info("hello world from int_collector_prometheus.py 2")
-    start_udp_server(args)
+    start_http_server(8000)
+    logger.info("hello world from int_collector_prometheus.py new 2")
+    while True:
+        process_request(1)
+    #start_udp_server(args)
 
 # SELECT mean("node_delay")  FROM int_telemetry  WHERE ("srcip" =~ /^$srcip$/ AND "dstip" =~ /^$dstip$/ AND  "node_index" =~ /^$hop$/) AND $timeFilter  GROUP BY time($interval) fill(null)
 # SELECT mean("node_delay") FROM "int_udp_policy"."int_telemetry" WHERE ("srcip" = '10.0.1.1' AND "dstip" = '10.0.2.2' AND "hop_number" = '0') AND $timeFilter GROUP BY time($__interval) fill(null)
