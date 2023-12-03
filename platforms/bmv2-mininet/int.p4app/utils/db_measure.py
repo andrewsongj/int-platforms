@@ -1,5 +1,6 @@
 from influxdb import InfluxDBClient
 import time
+import psycopg2
 
 # Configuration
 url = "http://localhost:8086"  # Replace with your InfluxDB URL
@@ -20,10 +21,27 @@ def influx_client():
     return client
 
 
-client = influx_client()
-dbs = client.get_list_database()
-print(dbs)
-count = client.query("SELECT * FROM int_telemetry")
-print(count)
-measurements = client.query("SHOW MEASUREMENTS")
-print(measurements)
+def pg_client():
+    conn = psycopg2.connect(
+        host="localhost",
+        database="int_telemetry_db",
+        user="andrew",
+        password="andrew",
+        port=5432,
+    )
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT version();")
+    record = cursor.fetchone()
+    print("***********************PG VERSION " + str(record))
+    return conn
+
+
+# client = influx_client()
+# dbs = client.get_list_database()
+# print(dbs)
+# count = client.query("SELECT * FROM int_telemetry")
+# print(count)
+# measurements = client.query("SHOW MEASUREMENTS")
+# print(measurements)
+pg = pg_client()
