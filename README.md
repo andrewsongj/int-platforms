@@ -48,6 +48,23 @@ Other useful INT software components
 ![The INT monitoring of the int-p4app network flow ](docs/int-p4app-visualisation.png)
 
 
+To replay packets through tcpreplay
+------
+- go to h1 terminal
+```  
+    cd int-platforms/platforms/bmv2-mininet/int.p4app/utils/
+    ./xterm_h1.sh
+```  
+
+- call tcpreplay(smallFlows.pcap is put in uploaded to the directory) 
+
+```  
+>> tcpreplay -i h1-eth0 /tmp/host/smallFlows.pcap
+```  
+
+- larger .pcap file can be downloaded here[Sample captures](https://tcpreplay.appneta.com/wiki/captures.html#bigflows-pcap), put them under this directory `platforms/bmv2-mininet/int.p4app/host`, then you can access it under `/tmp/host/` when you go enter h1 host terminal
+
+
 Contact
 ---------
 int-discuss@lists.geant.org

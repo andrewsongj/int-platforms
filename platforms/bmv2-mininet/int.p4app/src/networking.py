@@ -76,6 +76,8 @@ def start_int_collector(influxdb):
     collector_cmd = 'ip netns exec ns_int python3 /tmp/utils/int_collector_influx.py -i 6000 -H 192.168.0.1:8086 -d 0 &> /dev/null'
     print(collector_cmd)
     os.system(collector_cmd)
+    print('sudo apt-get install tcpreplay')
+    os.system('sudo apt-get install tcpreplay')
     
     
 def create_internet_connectivity():
