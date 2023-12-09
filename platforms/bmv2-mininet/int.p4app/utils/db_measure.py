@@ -21,9 +21,25 @@ def influx_client():
 
 
 client = influx_client()
-dbs = client.get_list_database()
-print(dbs)
-count = client.query("SELECT * FROM int_telemetry")
-print(count)
-measurements = client.query("SHOW MEASUREMENTS")
-print(measurements)
+# dbs = client.get_list_database()
+# print(dbs)
+query = "SELECT hop_delay FROM \"int_telemetry\" WHERE time >= '2023-12-03T22:33:00Z' AND time <= '2023-12-03T22:35:00Z'"
+# query = 'SELECT hop_delay FROM "int_telemetry" ORDER BY time DESC LIMIT 1'
+# Earliest time: 2023-11-27T06:00:26.992390Z
+# Latest time: 2023-12-02T04:58:42.569723Z
+
+num_iterations = [1, 10]
+times = []
+for _ in range(5):
+    trial = []
+    for i in num_iterations:
+        start_time = time.time()
+        for _ in range(i):
+            results = client.query(query)
+        end_time = time.time()
+        trial.append(end_time - start_time)
+    times.append(trial)
+print(times)
+# print(count)
+# measurements = client.query("SHOW MEASUREMENTS")
+# print(measurements)
