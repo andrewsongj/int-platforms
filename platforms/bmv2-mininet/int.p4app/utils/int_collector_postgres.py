@@ -8,6 +8,7 @@ import logging
 from copy import copy
 import io
 import psycopg2
+import json
 
 log_format = "[%(asctime)s] [%(levelname)s] - %(message)s"
 logging.basicConfig(
@@ -353,8 +354,10 @@ class IntReport:
 
 
 class IntCollector:
-    def __init__(self, influx, period):
-        self.influx = influx
+    def __init__(self, conn, cursor, period):
+        self.influx = conn
+        self.conn = conn
+        self.cursor = cursor
         self.reports = []
         self.last_dstts = {}  # save last `dstts` per each monitored flow
         self.last_reordering = {}  # save last `reordering` per each monitored flow
@@ -487,7 +490,16 @@ class IntCollector:
         logger.info("Json body for influx:\n %s" % pprint.pformat(json_body))
         if json_body:
             try:
-                self.influx.write_points(json_body)
+                # self.influx.write_points(json_body)
+                for entry in json_body:
+                    self.cursor.execute(
+                        """
+                        INSERT INTO int_telemetry (data)
+                        VALUES (%s)
+                    """,
+                        (json.dumps(entry),),
+                    )
+                self.conn.commit()
                 self.last_send = time.time()
                 logger.info(" %d int reports sent to the influx" % len(json_body))
             except Exception as e:
@@ -511,18 +523,29 @@ def pg_client(args):
     )
 
     cursor = conn.cursor()
-    cursor.execute("SELECT version();")
-    record = cursor.fetchone()
-    print("***********************PG VERSION " + record)
-    return conn
+    # cursor.execute("SELECT version();")
+    # record = cursor.fetchone()
+    # print("***********************PG VERSION " + str(record))
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS int_telemetry (
+           id SERIAL PRIMARY KEY,
+           data JSONB
+       );
+    """
+    )
+    conn.commit()
+
+    return conn, cursor
 
 
 def start_udp_server(args):
     bufferSize = 65565
     port = args.int_port
 
-    influx = pg_client(args)
-    collector = IntCollector(influx, args.period)
+    conn, cursor = pg_client(args)
+
+    collector = IntCollector(conn, cursor, args.period)
 
     # Create a datagram socket
     sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)

@@ -75,9 +75,9 @@ def start_int_collector(influxdb):
     chmod_cmd = "sudo chmod 1777 /tmp"
     print(chmod_cmd)
     os.system(chmod_cmd)
-    update_cmd = "sudo apt-get update"
-    print(update_cmd)
-    os.system(update_cmd)
+    # update_cmd = "sudo apt-get update"
+    # print(update_cmd)
+    # os.system(update_cmd)
     libpq_install_cmd = "sudo apt-get install libpq-dev"
     print(libpq_install_cmd)
     os.system(libpq_install_cmd)
